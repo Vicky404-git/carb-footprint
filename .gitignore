@@ -1,10 +1,24 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+# Environments
+.env
+.venv/
+venv/
+env/
+ENV/
 
-# Virtual environments
-.venv
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database
+carbon.db
+*.sqlite3
+
+# Docker
+.dockerignore
+
+# IDEs and OS
+.vscode/
+.idea/
+.DS_Store

@@ -58,7 +58,7 @@ def log_activity():
 
 @log_bp.route("/log/<int:log_id>", methods=["DELETE"])
 def delete_log(log_id):
-    entry = ActivityLog.query.get_or_404(log_id)
+    entry = db.get_or_404(ActivityLog, log_id)
     db.session.delete(entry)
     db.session.commit()
     return jsonify({"message": "deleted", "id": log_id}), 200
@@ -66,7 +66,7 @@ def delete_log(log_id):
 
 @log_bp.route("/log/<int:log_id>", methods=["PUT"])
 def edit_log(log_id):
-    entry = ActivityLog.query.get_or_404(log_id)
+    entry = db.get_or_404(ActivityLog, log_id)
     data = request.get_json()
     quantity = data.get("quantity")
 

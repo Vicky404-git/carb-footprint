@@ -43,8 +43,8 @@ def test_log_activity_success(client):
     
     assert response.status_code == 201
     assert data["message"] == "logged"
-    # car factor is 0.00021. 100 * 0.00021 = 0.021
-    assert data["co2_kg"] == 0.021
+    # car factor is 0.21. 100 * 0.21 = 21
+    assert data["co2_kg"] == 21
     assert data["category"] == "transport"
 
 def test_log_activity_missing_fields(client):

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>carb-trak</title>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-leaf">🌿</div>
+    carb-trak
+    <span class="brand-sub">/ daily CO₂ tracker</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-label">☀ light</button>
+</div>
+
+<div class="metrics">
+  <div class="mcard">
+    <div class="lbl">Today</div>
+    <div class="val" id="m-today">—</div>
+    <div class="unit">kg CO₂</div>
+  </div>
+  <div class="mcard">
+    <div class="lbl">Goal</div>
+    <div class="val">8.0</div>
+    <div class="unit">kg CO₂ / day</div>
+  </div>
+  <div class="mcard">
+    <div class="lbl">Status</div>
+    <div class="val" id="m-status">—</div>
+    <div class="unit" id="m-sub"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="tab('log')">Log</button>
+  <button class="tab" onclick="tab('breakdown')">Breakdown</button>
+  <button class="tab" onclick="tab('history')">History</button>
+</div>
+
+<div id="panel-log" class="panel active">
+  <div class="form-row">
+    <div class="field">
+      <label>Category</label>
+      <select id="cat" onchange="onCatChange()">
+        <option value="">— select —</option>
+        <option value="transport">Transport</option>
+        <option value="food">Food</option>
+        <option value="energy">Energy</option>
+        <option value="shopping">Shopping</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Activity</label>
+      <select id="act" onchange="onActChange()"><option>—</option></select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="field">
+      <label id="qty-label">Quantity</label>
+      <input type="number" id="qty" min="0.01" step="0.1" placeholder="e.g. 10">
+    </div>
+    <div class="field" style="display:flex;align-items:flex-end">
+      <button class="btn" onclick="logIt()">+ Log activity</button>
+    </div>
+  </div>
+  <div id="form-msg" style="font-size: 13px; font-weight: 600; margin-top: 10px; text-align: center;"></div>
+</div>
+
+<div id="panel-breakdown" class="panel">
+  <div class="sec-head"><div class="sec-title">Today by category</div></div>
+  <div id="breakdown-bars"><div class="empty">No logs yet today.</div></div>
+
+  <div class="sec-head" style="margin-top:1.5rem"><div class="sec-title">Category totals</div></div>
+  <div id="cat-totals"></div>
+</div>
+
+<div id="panel-history" class="panel">
+  <div class="sec-head">
+    <div class="sec-title">Today's logs</div>
+    <div id="hist-total" style="font-size:13px; font-weight:bold; color:var(--text-main)"></div>
+  </div>
+  <div id="log-list"><div class="empty">No logs yet.</div></div>
+</div>
+
+<script>
+let META = { factors: {}, units: {} };
+
+const DISPLAY = {
+  transport: { car:"Car", bike:"Motorbike", bus:"Bus", train:"Train" },
+  food: {
+    rice:"Rice", dal:"Dal", roti:"Roti", sabzi:"Sabzi", paneer:"Paneer",
+    rajma:"Rajma", chole:"Chole", idli:"Idli", dosa:"Dosa", poha:"Poha",
+    upma:"Upma", salad:"Salad", chicken_curry:"Chicken curry",
+    egg:"Egg", fish_curry:"Fish curry", mutton:"Mutton"
+  },
+  energy: { ac:"AC", gas_stove:"Gas stove", fan:"Fan", geyser:"Geyser" },
+  shopping: {
+    clothing_item:"Clothing", electronics_item:"Electronics",
+    plastic_bag:"Plastic bags", online_order:"Online order"
+  }
+};
+
+const CAT_COLORS = { transport: "#3ecf8e", food: "#fbbf24", energy: "#60a5fa", shopping: "#c084fc" };
+
+async function init() {
+  const r = await fetch("/api/meta");
+  META = await r.json();
+  loadSummary();
+  loadLogs();
+}
+
+function onCatChange() {
+  const cat = document.getElementById("cat").value;
+  const act = document.getElementById("act");
+  const acts = META.factors[cat] ? Object.keys(META.factors[cat]) : [];
+  act.innerHTML = acts.map(a => `<option value="${a}">${DISPLAY[cat]?.[a] || a}</option>`).join("");
+  onActChange();
+}
+
+function onActChange() {
+  const cat  = document.getElementById("cat").value;
+  const act  = document.getElementById("act").value;
+  const unit = META.units[cat]?.[act] || "";
+  document.getElementById("qty-label").textContent = unit ? `Quantity (${unit})` : "Quantity";
+}
+
+async function logIt() {
+  const cat = document.getElementById("cat").value;
+  const act = document.getElementById("act").value;
+  const qty = parseFloat(document.getElementById("qty").value);
+  const msg = document.getElementById("form-msg");
+
+  if (!cat || !act || !qty || qty <= 0) {
+    showMsg(msg, "⚠ Fill in all fields with a valid quantity.", "#e05050");
+    return;
+  }
+
+  const res = await fetch("/api/log", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ category: cat, activity: act, quantity: qty })
+  });
+  const data = await res.json();
+
+  if (res.ok) {
+    showMsg(msg, `✓ Logged — ${data.co2_kg} kg CO₂`, "#1db954");
+    document.getElementById("qty").value = "";
+    loadSummary();
+    loadLogs();
+  } else {
+    showMsg(msg, "✗ " + data.error, "#e05050");
+  }
+}
+
+async function loadSummary() {
+  const r = await fetch("/api/summary/today");
+  const d = await r.json();
+  document.getElementById("m-today").textContent = d.total_co2.toFixed(2);
+  const s  = document.getElementById("m-status");
+  const sl = document.getElementById("m-sub");
+  if (d.under_goal) {
+    s.textContent  = "under ✓"; s.className = "val green";
+    sl.textContent = `${(8 - d.total_co2).toFixed(2)} kg left`;
+  } else {
+    s.textContent  = "over ⚠"; s.className = "val red";
+    sl.textContent = `${(d.total_co2 - 8).toFixed(2)} kg over`;
+  }
+  renderBreakdown(d.breakdown);
+}
+
+function renderBreakdown(bd) {
+  const el = document.getElementById("breakdown-bars");
+  const ct = document.getElementById("cat-totals");
+  const entries = Object.entries(bd).sort((a, b) => b[1] - a[1]);
+
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty">No logs yet today.</div>';
+    ct.innerHTML = ""; return;
+  }
+
+  const max = Math.max(...entries.map(e => e[1]));
+
+  el.innerHTML = entries.map(([cat, val]) => `
+    <div class="bar-row">
+      <div class="bar-label">${cat.charAt(0).toUpperCase() + cat.slice(1)}</div>
+      <div class="bar-bg">
+        <div class="bar-fill" style="width:${Math.round(val / max * 100)}%;background:${CAT_COLORS[cat] || '#888'}"></div>
+      </div>
+      <div class="bar-val">${val.toFixed(2)} kg</div>
+    </div>`).join("");
+
+  ct.innerHTML = entries.map(([cat, val]) => `
+    <div class="cat-total-row">
+      <span class="badge ${cat}">${cat}</span>
+      <span class="cat-total-val">${val.toFixed(3)} kg CO₂</span>
+    </div>`).join("");
+}
+
+async function loadLogs() {
+  const today = new Date().toISOString().slice(0, 10);
+  const r     = await fetch(`/api/logs?date=${today}`);
+  const logs  = await r.json();
+  const el    = document.getElementById("log-list");
+  const ht    = document.getElementById("hist-total");
+
+  if (!logs.length) {
+    el.innerHTML = '<div class="empty">No logs yet today.</div>';
+    ht.textContent = ""; return;
+  }
+
+  const total = logs.reduce((s, l) => s + l.co2_kg, 0);
+  ht.textContent = `Total: ${total.toFixed(2)} kg`;
+
+  el.innerHTML = logs.map(l => {
+    const unit     = META.units[l.category]?.[l.activity] || "";
+    const name     = DISPLAY[l.category]?.[l.activity] || l.activity;
+    const co2color = l.co2_kg > 3 ? "#e05050" : l.co2_kg > 1 ? "#fbbf24" : "#1db954";
+    return `
+    <div class="log-item" id="item-${l.id}">
+      <span class="badge ${l.category}">${l.category}</span>
+      <div class="log-info">
+        <div class="log-name">${name}</div>
+        <div class="log-meta">
+          ${l.quantity}${unit} · ${l.time}
+          <div id="edit-area-${l.id}"></div>
+        </div>
+      </div>
+      <div class="log-right">
+        <div class="log-co2" style="color:${co2color}">${l.co2_kg} kg</div>
+        <div class="log-actions">
+          <button class="icon-btn" title="edit" onclick="startEdit(${l.id}, ${l.quantity})">✎</button>
+          <button class="icon-btn" title="delete" onclick="deleteLog(${l.id})" style="color:#e05050">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function startEdit(id, currentQty) {
+  const area = document.getElementById(`edit-area-${id}`);
+  area.innerHTML = `
+    <div class="edit-row">
+      <input type="number" id="eq-${id}" value="${currentQty}" min="0.01" step="0.1">
+      <button class="btn" onclick="saveEdit(${id})">save</button>
+      <button class="btn-cancel" onclick="cancelEdit(${id})">cancel</button>
+    </div>`;
+}
+
+function cancelEdit(id) { document.getElementById(`edit-area-${id}`).innerHTML = ""; }
+
+async function saveEdit(id) {
+  const qty = parseFloat(document.getElementById(`eq-${id}`).value);
+  if (!qty || qty <= 0) { alert("Enter a valid quantity"); return; }
+  const res = await fetch(`/api/log/${id}`, {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ quantity: qty })
+  });
+  const d = await res.json();
+  if (res.ok) { loadSummary(); loadLogs(); } else alert(d.error);
+}
+
+async function deleteLog(id) {
+  if (!confirm("Delete this log?")) return;
+  const res = await fetch(`/api/log/${id}`, { method: "DELETE" });
+  if (res.ok) { loadSummary(); loadLogs(); }
+}
+
+function tab(t) {
+  document.querySelectorAll(".tab").forEach((b, i) => {
+    b.classList.toggle("active", ["log", "breakdown", "history"][i] === t);
+  });
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.getElementById("panel-" + t).classList.add("active");
+  if (t === "breakdown") loadSummary();
+  if (t === "history")   loadLogs();
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.dataset.theme === "dark" ? "light" : "dark";
+  html.dataset.theme = next;
+  document.getElementById("theme-label").textContent = next === "dark" ? "☀ light" : "☾ dark";
+}
+
+function showMsg(el, text, color) {
+  el.textContent = text; el.style.color = color;
+  setTimeout(() => el.textContent = "", 4000);
+}
+
+init();
+</script>
+</body>
+</html>

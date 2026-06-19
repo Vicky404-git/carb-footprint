@@ -1,0 +1,363 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&family=Myriad+Pro&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body-preview {
+  display: block;
+}
+
+.fa-wrap {
+  background: linear-gradient(160deg, #c8eeff 0%, #a8dff0 25%, #7ecba0 55%, #a8e6b8 80%, #d4f5d4 100%);
+  min-height: 580px;
+  padding: 20px;
+  font-family: 'Segoe UI', -apple-system, sans-serif;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.fa-wrap::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -60px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255,255,255,0.45) 0%, rgba(180,230,255,0.2) 50%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.fa-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 40px;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(100,200,150,0.15) 50%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* topbar */
+.fa-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.fa-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a5c3a;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+  letter-spacing: -0.02em;
+}
+.fa-brand-leaf {
+  width: 32px; height: 32px;
+  background: linear-gradient(145deg, #5edd8a, #1db954);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(30,180,80,0.4), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.fa-sub { font-size: 11px; color: #2d7a50; font-weight: 400; }
+
+.fa-theme-btn {
+  background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(200,235,255,0.5) 100%);
+  border: 1px solid rgba(255,255,255,0.8);
+  border-bottom-color: rgba(100,180,220,0.4);
+  color: #1a5c6a;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,100,150,0.15), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+/* metric cards */
+.fa-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.fa-mcard {
+  background: linear-gradient(160deg, rgba(255,255,255,0.72) 0%, rgba(210,240,255,0.55) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.85);
+  border-bottom-color: rgba(100,180,220,0.3);
+  border-right-color: rgba(100,180,220,0.2);
+  border-radius: 14px;
+  padding: 14px 10px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(30,120,180,0.1), inset 0 1px 0 rgba(255,255,255,0.95);
+  position: relative;
+  overflow: hidden;
+}
+.fa-mcard::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+}
+.fa-lbl {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #3a8a6a;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.fa-val {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 4px;
+  background: linear-gradient(180deg, #1a6e40, #0d4a2a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.fa-val.green {
+  background: linear-gradient(180deg, #1db954, #0f7a35);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.fa-val.red {
+  background: linear-gradient(180deg, #e05050, #a02020);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.fa-unit { font-size: 10px; color: #5a9a7a; }
+
+/* tabs */
+.fa-tabs {
+  display: flex;
+  gap: 3px;
+  background: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 30px;
+  padding: 4px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 3px rgba(0,80,120,0.1);
+}
+.fa-tab {
+  flex: 1;
+  padding: 7px 10px;
+  border: none;
+  background: transparent;
+  color: #3a7a5a;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.fa-tab.active {
+  background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(200,240,220,0.85) 100%);
+  color: #1a5c3a;
+  box-shadow: 0 2px 8px rgba(30,120,80,0.2), inset 0 1px 0 rgba(255,255,255,1);
+  border: 1px solid rgba(255,255,255,0.9);
+}
+
+/* form card */
+.fa-card {
+  background: linear-gradient(160deg, rgba(255,255,255,0.68) 0%, rgba(200,235,255,0.5) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.85);
+  border-bottom-color: rgba(100,180,220,0.3);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 6px 24px rgba(20,100,160,0.1), inset 0 1px 0 rgba(255,255,255,0.95);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.fa-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 15%; right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
+}
+
+.fa-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.fa-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #3a7a6a;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 5px;
+}
+.fa-select, .fa-input {
+  width: 100%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(220,245,235,0.7) 100%);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-bottom-color: rgba(80,160,200,0.3);
+  color: #1a4a3a;
+  padding: 8px 11px;
+  border-radius: 10px;
+  font-size: 13px;
+  box-shadow: inset 0 1px 3px rgba(0,80,120,0.08), 0 1px 0 rgba(255,255,255,0.8);
+  outline: none;
+}
+
+.fa-btn {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(180deg, #4dd980 0%, #1db954 50%, #0f9940 100%);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-bottom-color: rgba(0,100,40,0.4);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(20,160,70,0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+  text-shadow: 0 1px 2px rgba(0,80,30,0.4);
+  letter-spacing: 0.01em;
+}
+
+/* log items */
+.fa-log-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(100,180,150,0.2);
+}
+.fa-badge {
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.fa-badge.transport {
+  background: linear-gradient(180deg, rgba(100,220,170,0.7), rgba(60,180,130,0.6));
+  color: #0d5c3a;
+  border: 1px solid rgba(80,200,140,0.4);
+}
+.fa-badge.food {
+  background: linear-gradient(180deg, rgba(255,210,100,0.7), rgba(230,170,50,0.6));
+  color: #7a4a00;
+  border: 1px solid rgba(220,170,60,0.4);
+}
+.fa-log-name { font-size: 13px; font-weight: 600; color: #1a4a3a; }
+.fa-log-meta { font-size: 11px; color: #5a8a7a; margin-top: 1px; }
+.fa-log-co2 { font-size: 13px; font-weight: 700; margin-left: auto; color: #1db954; }
+
+/* bubble deco */
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6), rgba(180,230,255,0.2) 60%, transparent);
+  border: 1px solid rgba(255,255,255,0.5);
+  pointer-events: none;
+}
+</style>
+
+<div class="fa-wrap">
+  <div class="bubble" style="width:60px;height:60px;bottom:80px;right:30px;opacity:0.6"></div>
+  <div class="bubble" style="width:30px;height:30px;bottom:150px;right:80px;opacity:0.4"></div>
+  <div class="bubble" style="width:45px;height:45px;top:120px;right:15px;opacity:0.35"></div>
+
+  <div class="fa-topbar">
+    <div class="fa-brand">
+      <div class="fa-brand-leaf">🌿</div>
+      carb-trak
+      <span class="fa-sub">/ daily CO₂ tracker</span>
+    </div>
+    <button class="fa-theme-btn">☀ light</button>
+  </div>
+
+  <div class="fa-metrics">
+    <div class="fa-mcard">
+      <div class="fa-lbl">Today</div>
+      <div class="fa-val">3.24</div>
+      <div class="fa-unit">kg CO₂</div>
+    </div>
+    <div class="fa-mcard">
+      <div class="fa-lbl">Goal</div>
+      <div class="fa-val">8.0</div>
+      <div class="fa-unit">kg CO₂ / day</div>
+    </div>
+    <div class="fa-mcard">
+      <div class="fa-lbl">Status</div>
+      <div class="fa-val green">under ✓</div>
+      <div class="fa-unit">4.76 kg left</div>
+    </div>
+  </div>
+
+  <div class="fa-tabs">
+    <button class="fa-tab active">Log</button>
+    <button class="fa-tab">Breakdown</button>
+    <button class="fa-tab">History</button>
+  </div>
+
+  <div class="fa-card">
+    <div class="fa-form-row">
+      <div>
+        <span class="fa-label">Category</span>
+        <select class="fa-select"><option>Transport</option></select>
+      </div>
+      <div>
+        <span class="fa-label">Activity</span>
+        <select class="fa-select"><option>Car</option></select>
+      </div>
+    </div>
+    <div class="fa-form-row">
+      <div>
+        <span class="fa-label">Quantity (km)</span>
+        <input class="fa-input" type="number" placeholder="e.g. 12" value="12">
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="fa-btn">+ Log activity</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fa-card">
+    <div class="fa-log-item">
+      <span class="fa-badge transport">transport</span>
+      <div>
+        <div class="fa-log-name">Car</div>
+        <div class="fa-log-meta">12 km · 09:14</div>
+      </div>
+      <div class="fa-log-co2">2.52 kg</div>
+    </div>
+    <div class="fa-log-item">
+      <span class="fa-badge food">food</span>
+      <div>
+        <div class="fa-log-name">Rice</div>
+        <div class="fa-log-meta">200 g · 13:02</div>
+      </div>
+      <div class="fa-log-co2">0.56 kg</div>
+    </div>
+    <div class="fa-log-item" style="border-bottom:none">
+      <span class="fa-badge transport">transport</span>
+      <div>
+        <div class="fa-log-name">Bus</div>
+        <div class="fa-log-meta">5 km · 18:30</div>
+      </div>
+      <div class="fa-log-co2">0.16 kg</div>
+    </div>
+  </div>
+</div>

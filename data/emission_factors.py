@@ -3,10 +3,10 @@
 
 FACTORS = {
     "transport": {
-        "car":   0.00021,    # kg CO2 per meter... nah per km
-        "bike":  0.00011,
-        "bus":   0.000089,
-        "train": 0.000037,
+        "car":   0.21,    # kg CO2 per meter... nah per km
+        "bike":  0.11,
+        "bus":   0.089,
+        "train": 0.037,
     },
     "food": {
         # kg CO2 per gram of food

@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>carb-trak</title>
 <link rel="stylesheet" href="/static/styles.css">
+<link rel="manifest" href="/static/manifest.json">
 </head>
 <body>
+
+<div class="bg-layer"></div>
+<div class="bg-overlay"></div>
 
 <div class="topbar">
   <div class="brand">
@@ -41,6 +45,7 @@
   <button class="tab" onclick="tab('history')">History</button>
 </div>
 
+<!-- LOG PANEL -->
 <div id="panel-log" class="panel active">
   <div class="form-row">
     <div class="field">
@@ -67,21 +72,22 @@
       <button class="btn" onclick="logIt()">+ Log activity</button>
     </div>
   </div>
-  <div id="form-msg" style="font-size: 13px; font-weight: 600; margin-top: 10px; text-align: center;"></div>
+  <div id="form-msg" style="font-size:13px;font-weight:600;margin-top:10px;text-align:center"></div>
 </div>
 
+<!-- BREAKDOWN PANEL -->
 <div id="panel-breakdown" class="panel">
   <div class="sec-head"><div class="sec-title">Today by category</div></div>
   <div id="breakdown-bars"><div class="empty">No logs yet today.</div></div>
-
   <div class="sec-head" style="margin-top:1.5rem"><div class="sec-title">Category totals</div></div>
   <div id="cat-totals"></div>
 </div>
 
+<!-- HISTORY PANEL -->
 <div id="panel-history" class="panel">
   <div class="sec-head">
     <div class="sec-title">Today's logs</div>
-    <div id="hist-total" style="font-size:13px; font-weight:bold; color:var(--text-main)"></div>
+    <div id="hist-total" style="font-size:13px;font-weight:bold;color:var(--text-main)"></div>
   </div>
   <div id="log-list"><div class="empty">No logs yet.</div></div>
 </div>
@@ -104,7 +110,12 @@ const DISPLAY = {
   }
 };
 
-const CAT_COLORS = { transport: "#3ecf8e", food: "#fbbf24", energy: "#60a5fa", shopping: "#c084fc" };
+const CAT_COLORS = {
+  transport: "#3ecf8e",
+  food:      "#fbbf24",
+  energy:    "#60a5fa",
+  shopping:  "#c084fc"
+};
 
 async function init() {
   const r = await fetch("/api/meta");
@@ -117,7 +128,9 @@ function onCatChange() {
   const cat = document.getElementById("cat").value;
   const act = document.getElementById("act");
   const acts = META.factors[cat] ? Object.keys(META.factors[cat]) : [];
-  act.innerHTML = acts.map(a => `<option value="${a}">${DISPLAY[cat]?.[a] || a}</option>`).join("");
+  act.innerHTML = acts.map(a =>
+    `<option value="${a}">${DISPLAY[cat]?.[a] || a}</option>`
+  ).join("");
   onActChange();
 }
 
@@ -125,7 +138,8 @@ function onActChange() {
   const cat  = document.getElementById("cat").value;
   const act  = document.getElementById("act").value;
   const unit = META.units[cat]?.[act] || "";
-  document.getElementById("qty-label").textContent = unit ? `Quantity (${unit})` : "Quantity";
+  document.getElementById("qty-label").textContent =
+    unit ? `Quantity (${unit})` : "Quantity";
 }
 
 async function logIt() {
@@ -163,23 +177,26 @@ async function loadSummary() {
   const s  = document.getElementById("m-status");
   const sl = document.getElementById("m-sub");
   if (d.under_goal) {
-    s.textContent  = "under ✓"; s.className = "val green";
+    s.textContent  = "under ✓";
+    s.className    = "val green";
     sl.textContent = `${(8 - d.total_co2).toFixed(2)} kg left`;
   } else {
-    s.textContent  = "over ⚠"; s.className = "val red";
+    s.textContent  = "over ⚠";
+    s.className    = "val red";
     sl.textContent = `${(d.total_co2 - 8).toFixed(2)} kg over`;
   }
   renderBreakdown(d.breakdown);
 }
 
 function renderBreakdown(bd) {
-  const el = document.getElementById("breakdown-bars");
-  const ct = document.getElementById("cat-totals");
+  const el      = document.getElementById("breakdown-bars");
+  const ct      = document.getElementById("cat-totals");
   const entries = Object.entries(bd).sort((a, b) => b[1] - a[1]);
 
   if (!entries.length) {
     el.innerHTML = '<div class="empty">No logs yet today.</div>';
-    ct.innerHTML = ""; return;
+    ct.innerHTML = "";
+    return;
   }
 
   const max = Math.max(...entries.map(e => e[1]));
@@ -208,8 +225,9 @@ async function loadLogs() {
   const ht    = document.getElementById("hist-total");
 
   if (!logs.length) {
-    el.innerHTML = '<div class="empty">No logs yet today.</div>';
-    ht.textContent = ""; return;
+    el.innerHTML   = '<div class="empty">No logs yet today.</div>';
+    ht.textContent = "";
+    return;
   }
 
   const total = logs.reduce((s, l) => s + l.co2_kg, 0);
@@ -250,16 +268,21 @@ function startEdit(id, currentQty) {
     </div>`;
 }
 
-function cancelEdit(id) { document.getElementById(`edit-area-${id}`).innerHTML = ""; }
+function cancelEdit(id) {
+  document.getElementById(`edit-area-${id}`).innerHTML = "";
+}
 
 async function saveEdit(id) {
   const qty = parseFloat(document.getElementById(`eq-${id}`).value);
   if (!qty || qty <= 0) { alert("Enter a valid quantity"); return; }
   const res = await fetch(`/api/log/${id}`, {
-    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ quantity: qty })
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ quantity: qty })
   });
   const d = await res.json();
-  if (res.ok) { loadSummary(); loadLogs(); } else alert(d.error);
+  if (res.ok) { loadSummary(); loadLogs(); }
+  else alert(d.error);
 }
 
 async function deleteLog(id) {
@@ -270,7 +293,7 @@ async function deleteLog(id) {
 
 function tab(t) {
   document.querySelectorAll(".tab").forEach((b, i) => {
-    b.classList.toggle("active", ["log", "breakdown", "history"][i] === t);
+    b.classList.toggle("active", ["log","breakdown","history"][i] === t);
   });
   document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
   document.getElementById("panel-" + t).classList.add("active");
@@ -282,11 +305,13 @@ function toggleTheme() {
   const html = document.documentElement;
   const next = html.dataset.theme === "dark" ? "light" : "dark";
   html.dataset.theme = next;
-  document.getElementById("theme-label").textContent = next === "dark" ? "☀ light" : "☾ dark";
+  document.getElementById("theme-label").textContent =
+    next === "dark" ? "☀ light" : "☾ dark";
 }
 
 function showMsg(el, text, color) {
-  el.textContent = text; el.style.color = color;
+  el.textContent = text;
+  el.style.color = color;
   setTimeout(() => el.textContent = "", 4000);
 }
 

@@ -1,10 +1,18 @@
 import os
+import sys
+import threading
+import webbrowser
 from flask import Flask, send_from_directory
 from models import db
 
-app = Flask(__name__)
-# Look for an env var first, fallback to local sqlite
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL", "sqlite:///carbon.db")
+# 1. Handle paths for PyInstaller compression
+if getattr(sys, 'frozen', False):
+    static_folder = os.path.join(sys._MEIPASS, 'static')
+    app = Flask(__name__, static_folder=static_folder)
+else:
+    app = Flask(__name__)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///carbon.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
@@ -19,7 +27,13 @@ with app.app_context():
 
 @app.route("/")
 def index():
-    return send_from_directory("static", "index.html")
+    return send_from_directory(app.static_folder, "index.html")
+
+# 2. Auto-open the browser
+def open_browser():
+    webbrowser.open_new('http://127.0.0.1:8000/')
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Start the browser after a 1-second delay to ensure Flask is running
+    threading.Timer(1.0, open_browser).start()
+    app.run(port=8000)
